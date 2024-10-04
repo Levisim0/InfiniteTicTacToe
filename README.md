@@ -7,8 +7,6 @@ Welcome to **Infinite Tic-Tac-Toe**, a unique twist on the classic game! In this
 - [Game Rules](#game-rules)
 - [Gameplay Instructions](#gameplay-instructions)
 - [How to Run](#how-to-run)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Game Rules
 
@@ -51,13 +49,7 @@ To run the game locally, follow these steps:
     java InfiniteTicTacToe
     ```
 
-## Contributing
 
-Contributions are welcome! If you have suggestions or improvements, please create a pull request or open an issue.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
 
 ---
 
