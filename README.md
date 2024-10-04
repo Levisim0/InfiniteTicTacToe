@@ -37,7 +37,7 @@ To run the game locally, follow these steps:
 
 2. **Clone the Repository**:
     ```bash
-    git clone https://github.com/your-username/infinite-tic-tac-toe.git
+    git clone https://github.com/Levisim0/infinite-tic-tac-toe.git
     cd infinite-tic-tac-toe
     ```
 
