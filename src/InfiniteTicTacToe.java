@@ -1,108 +1,141 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Scanner;
 
-public class InfiniteTicTacToe {
+public class InfiniteTicTacToe extends JFrame {
 
     private static final int BOARD_SIZE = 3;
-    private static char[][] board = new char[BOARD_SIZE][BOARD_SIZE];
-    private static ArrayList<int[]> moveHistory = new ArrayList<>(); // Store the history of moves
-    private static char currentPlayer = 'X';  // Start with player 'X'
+    private JButton[][] buttons = new JButton[BOARD_SIZE][BOARD_SIZE];
+    private ArrayList<int[]> moveHistoryX = new ArrayList<>();
+    private ArrayList<int[]> moveHistoryO = new ArrayList<>();
+    private char currentPlayer = 'X';
+    private int moveCountX = 0;
+    private int moveCountO = 0;
 
-    public static void main(String[] args) {
-        initializeBoard();
-        printBoard();
+    public InfiniteTicTacToe() {
+        setTitle("Infinite Tic-Tac-Toe");
+        setSize(400, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        int moveCount = 0;
-        boolean gameWon = false;
-        Scanner scanner = new Scanner(System.in);
+        JPanel gamePanel = new JPanel();
+        gamePanel.setLayout(new GridLayout(BOARD_SIZE, BOARD_SIZE));
+        gamePanel.setBackground(Color.BLACK);
 
-        while (!gameWon) {
-            // Get player input
-            System.out.println("Player " + currentPlayer + "'s turn.");
-            System.out.print("Enter row and column (0-2): ");
-            int row = scanner.nextInt();
-            int col = scanner.nextInt();
-
-            // Validate move
-            if (row < 0 || col < 0 || row >= BOARD_SIZE || col >= BOARD_SIZE) {
-                System.out.println("Invalid move. Try again.");
-                continue;
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                buttons[i][j] = new JButton("-");
+                buttons[i][j].setFont(new Font("Arial", Font.PLAIN, 60));
+                buttons[i][j].setBackground(Color.BLACK);
+                buttons[i][j].setForeground(Color.WHITE);
+                final int row = i;
+                final int col = j;
+                buttons[i][j].addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        handleButtonClick(row, col);
+                    }
+                });
+                gamePanel.add(buttons[i][j]);
             }
+        }
 
-            // Place mark or replace the oldest move if 3 moves already made
-            if (moveCount < 3 && board[row][col] == '-') {
-                board[row][col] = currentPlayer;
-                moveHistory.add(new int[]{row, col});
-            } else if (moveCount >= 3) {
-                // Replace oldest move
-                int[] oldMove = moveHistory.get(0); // Get the first move
-                if (board[oldMove[0]][oldMove[1]] == currentPlayer) {
-                    board[oldMove[0]][oldMove[1]] = '-';  // Clear the old move
-                    moveHistory.remove(0);  // Remove the oldest move from history
-                    board[row][col] = currentPlayer;
-                    moveHistory.add(new int[]{row, col});
-                } else {
-                    System.out.println("You can only replace your own previous move.");
-                    continue;
-                }
+        add(gamePanel);
+    }
+
+    private void handleButtonClick(int row, int col) {
+        if (buttons[row][col].getText().equals("-")) {
+            buttons[row][col].setText(String.valueOf(currentPlayer));
+            if (currentPlayer == 'X') {
+                buttons[row][col].setForeground(Color.CYAN);
+                handleMove(row, col, moveHistoryX, ++moveCountX);
             } else {
-                System.out.println("Position already taken. Try again.");
-                continue;
+                buttons[row][col].setForeground(Color.MAGENTA);
+                handleMove(row, col, moveHistoryO, ++moveCountO);
             }
 
-            moveCount++;
-            printBoard();
+            buttons[row][col].setBackground(Color.DARK_GRAY);
 
-            // Check for win
-            gameWon = checkForWin();
-            if (!gameWon) {
-                // Switch player
-                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
-            }
-        }
-
-        System.out.println("Player " + currentPlayer + " wins!");
-    }
-
-    // Initialize the board with dashes
-    private static void initializeBoard() {
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            for (int j = 0; j < BOARD_SIZE; j++) {
-                board[i][j] = '-';
+            if (checkForWin()) {
+                JOptionPane.showMessageDialog(this, "Congrats! " + currentPlayer + " wins!");
+                resetBoard();
+            } else {
+                switchPlayer();
             }
         }
     }
 
-    // Print the current board
-    private static void printBoard() {
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            for (int j = 0; j < BOARD_SIZE; j++) {
-                System.out.print(board[i][j] + " ");
-            }
-            System.out.println();
+    private void handleMove(int row, int col, ArrayList<int[]> moveHistory, int moveCount) {
+        if (moveCount > 3 && moveHistory.size() > 0) {
+            int[] oldestMove = moveHistory.remove(0);
+            buttons[oldestMove[0]][oldestMove[1]].setText("-");
+            buttons[oldestMove[0]][oldestMove[1]].setBackground(null);
+            buttons[oldestMove[0]][oldestMove[1]].setForeground(Color.WHITE);
         }
-        System.out.println();
+
+        if (moveHistory.size() > 0) {
+            int[] lastMove = moveHistory.get(moveHistory.size() - 1);
+            buttons[lastMove[0]][lastMove[1]].setBackground(Color.BLACK);
+            buttons[lastMove[0]][lastMove[1]].setForeground(currentPlayer == 'X' ? Color.CYAN : Color.MAGENTA);
+        }
+
+        moveHistory.add(new int[]{row, col});
     }
 
-    // Check if the current player has won
-    private static boolean checkForWin() {
-        // Check rows, columns, and diagonals
+    private void switchPlayer() {
+        currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+    }
+
+    private boolean checkForWin() {
         for (int i = 0; i < BOARD_SIZE; i++) {
-            if (board[i][0] == currentPlayer && board[i][1] == currentPlayer && board[i][2] == currentPlayer) {
+            if (buttons[i][0].getText().equals(String.valueOf(currentPlayer)) &&
+                    buttons[i][1].getText().equals(String.valueOf(currentPlayer)) &&
+                    buttons[i][2].getText().equals(String.valueOf(currentPlayer))) {
                 return true;
             }
-            if (board[0][i] == currentPlayer && board[1][i] == currentPlayer && board[2][i] == currentPlayer) {
+            if (buttons[0][i].getText().equals(String.valueOf(currentPlayer)) &&
+                    buttons[1][i].getText().equals(String.valueOf(currentPlayer)) &&
+                    buttons[2][i].getText().equals(String.valueOf(currentPlayer))) {
                 return true;
             }
         }
 
-        if (board[0][0] == currentPlayer && board[1][1] == currentPlayer && board[2][2] == currentPlayer) {
+        if (buttons[0][0].getText().equals(String.valueOf(currentPlayer)) &&
+                buttons[1][1].getText().equals(String.valueOf(currentPlayer)) &&
+                buttons[2][2].getText().equals(String.valueOf(currentPlayer))) {
             return true;
         }
-        if (board[0][2] == currentPlayer && board[1][1] == currentPlayer && board[2][0] == currentPlayer) {
+        if (buttons[0][2].getText().equals(String.valueOf(currentPlayer)) &&
+                buttons[1][1].getText().equals(String.valueOf(currentPlayer)) &&
+                buttons[2][0].getText().equals(String.valueOf(currentPlayer))) {
             return true;
         }
 
         return false;
+    }
+
+    private void resetBoard() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                buttons[i][j].setText("-");
+                buttons[i][j].setBackground(Color.BLACK);
+                buttons[i][j].setForeground(Color.WHITE);
+            }
+        }
+        moveHistoryX.clear();
+        moveHistoryO.clear();
+        moveCountX = 0;
+        moveCountO = 0;
+        currentPlayer = 'X';
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new InfiniteTicTacToe().setVisible(true);
+            }
+        });
     }
 }
